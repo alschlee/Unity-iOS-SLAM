@@ -1,62 +1,66 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
-using UnityEngine.UI;
 
 public class SLAMManager : MonoBehaviour
 {
     [SerializeField]
-    private ARSession arSession;
+    private ARPointCloudManager pointCloudManager;
     
     [SerializeField]
-    private ARCameraManager cameraManager;
+    private ARPlaneManager planeManager;
     
     [SerializeField]
-    private PlaneDetectionManager planeDetectionManager;
+    private MapVisualization mapVisualization;
     
-    [SerializeField]
-    private PointCloudManager pointCloudManager;
+    private string defaultMapFilename = "ar_map.json";
     
-    [SerializeField]
-    private Text statusText;
-    
-    private bool isMapping = false;
-    
-    public void StartMapping()
+    private void Start()
     {
-        isMapping = true;
-        Debug.Log("매핑 시작");
+        // Validate required components
+        if (pointCloudManager == null)
+        {
+            Debug.LogError("ARPointCloudManager not assigned to SLAMManager!");
+        }
         
-        if (statusText != null)
-            statusText.text = "매핑 진행 중~~~ 주변을 천천히 스캔하세요 ^_^";
-    }
-    
-    public void StopMapping()
-    {
-        isMapping = false;
-        Debug.Log("매핑 중지");
+        if (planeManager == null)
+        {
+            Debug.LogError("ARPlaneManager not assigned to SLAMManager!");
+        }
         
-        if (statusText != null)
-            statusText.text = "매핑 완료. 감지된 평면: " + planeDetectionManager.GetDetectedPlanesCount();
+        if (mapVisualization == null)
+        {
+            Debug.LogError("MapVisualization not assigned to SLAMManager!");
+        }
     }
     
     public void SaveMap()
     {
-        Debug.Log("3D 맵 저장");
-        
-        // 나중에 매핑 데이터 저장 로직 추가
-        
-        if (statusText != null)
-            statusText.text = "3D 맵이 저장되었습니다.";
-    }
-    
-    // 카메라 위치 추적 (로컬라이제이션)
-    public Vector3 GetCurrentCameraPosition()
-    {
-        if (cameraManager != null && cameraManager.transform != null)
+        if (pointCloudManager == null || planeManager == null || mapVisualization == null)
         {
-            return cameraManager.transform.position;
+            Debug.LogError("Cannot save map: Missing required components!");
+            return;
         }
         
-        return Vector3.zero;
+        mapVisualization.SaveMap(pointCloudManager, planeManager, defaultMapFilename);
+        Debug.Log("Map saved successfully!");
+    }
+    
+    public void LoadMap()
+    {
+        if (mapVisualization == null)
+        {
+            Debug.LogError("Cannot load map: MapVisualization component is missing!");
+            return;
+        }
+        
+        mapVisualization.LoadAndVisualizeMap(defaultMapFilename);
+    }
+    
+    public void ClearVisualization()
+    {
+        if (mapVisualization != null)
+        {
+            mapVisualization.ClearMapVisualization();
+        }
     }
 }

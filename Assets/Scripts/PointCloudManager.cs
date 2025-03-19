@@ -178,4 +178,9 @@ public class PointCloudManager : MonoBehaviour
     {
         return pointVisualizers.Count;
     }
+
+    public ARPointCloudManager GetPointCloudManager()
+    {
+        return pointCloudManager;
+    }
 }
